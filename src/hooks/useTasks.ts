@@ -51,6 +51,14 @@ export const useTasks = () => {
   git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
   git commit -m "some error fixes"
   git push  };
+  git commit -m "some error fixes"
+  git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  };
 
   const updateTask = async (id: number, updatedTask: Partial<Task>) => {
     try {
