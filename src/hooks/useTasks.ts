@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import type { Task } from "../types";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+
 export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -10,19 +13,8 @@ export const useTasks = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get(
-          "https://jsonplaceholder.typicode.com/todos"
-        );
-        const mappedTasks: Task[] = response.data
-          .slice(0, 10)
-          .map((item: { id: number; title: string; completed: boolean }) => ({
-            id: item.id,
-            title: item.title,
-            description: "Sample description",
-            status: item.completed ? "done" : "todo",
-            dueDate: new Date().toISOString().split("T")[0],
-          }));
-        setTasks(mappedTasks);
+        const response = await axios.get(`${API_BASE_URL}/tasks`);
+        setTasks(response.data);
       } catch {
         setError("Failed to fetch tasks");
       } finally {
@@ -34,11 +26,8 @@ export const useTasks = () => {
 
   const addTask = async (task: Omit<Task, "id">) => {
     try {
-      const response = await axios.post(
-        "https://jsonplaceholder.typicode.com/todos",
-        task
-      );
-      setTasks([...tasks, { ...task, id: response.data.id }]);
+      const response = await axios.post(`${API_BASE_URL}/tasks`, task);
+      setTasks([...tasks, response.data]);
     } catch {
       setError("Failed to add task");
     }
@@ -46,11 +35,7 @@ export const useTasks = () => {
 
   const updateTask = async (id: number, updatedTask: Partial<Task>) => {
     try {
-      console.log(updatedTask);
-      await axios.put(
-        `https://jsonplaceholder.typicode.com/todos/${id}`,
-        updatedTask
-      );
+      await axios.put(`${API_BASE_URL}/tasks/${id}`, updatedTask);
       setTasks(
         tasks.map((task) =>
           task.id === id ? { ...task, ...updatedTask } : task
@@ -63,9 +48,7 @@ export const useTasks = () => {
 
   const deleteTask = async (id: number) => {
     try {
-      console.log(id);
-
-      await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
+      await axios.delete(`${API_BASE_URL}/tasks/${id}`);
       setTasks(tasks.filter((task) => task.id !== id));
     } catch {
       setError("Failed to delete task");
@@ -74,17 +57,8 @@ export const useTasks = () => {
 
   const fetchTaskById = async (id: number): Promise<Task | null> => {
     try {
-      const response = await axios.get(
-        `https://jsonplaceholder.typicode.com/todos/${id}`
-      );
-      const task: Task = {
-        id: response.data.id,
-        title: response.data.title,
-        description: "Sample description",
-        status: response.data.completed ? "done" : "todo",
-        dueDate: new Date().toISOString().split("T")[0],
-      };
-      return task;
+      const response = await axios.get(`${API_BASE_URL}/tasks/${id}`);
+      return response.data;
     } catch {
       setError("Failed to fetch task");
       return null;

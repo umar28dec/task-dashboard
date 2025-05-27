@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  container:
+  frontend:
     image: node:latest
     working_dir: /app
     volumes:
@@ -12,14 +12,14 @@ services:
       - NODE_ENV=development
       - VITE_HOST=0.0.0.0
 
-  container2:
-    image: node:latest
+  backend:
+    build:
+      context: ./backend
     working_dir: /app
     volumes:
-      - ./:/app
-    command: sh -c "npm install && npm run dev -- --host"
+      - ./backend:/app
+    command: sh -c "npm install && npm run dev"
     ports:
-      - "5174:5173"
+      - "4000:4000"
     environment:
       - NODE_ENV=development
-      - VITE_HOST=0.0.0.0
