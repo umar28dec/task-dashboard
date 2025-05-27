@@ -15,7 +15,7 @@ export const useTasks = () => {
         );
         const mappedTasks: Task[] = response.data
           .slice(0, 10)
-          .map((item: any) => ({
+          .map((item: { id: number; title: string; completed: boolean }) => ({
             id: item.id,
             title: item.title,
             description: "Sample description",
@@ -23,7 +23,7 @@ export const useTasks = () => {
             dueDate: new Date().toISOString().split("T")[0],
           }));
         setTasks(mappedTasks);
-      } catch (err) {
+      } catch {
         setError("Failed to fetch tasks");
       } finally {
         setLoading(false);
@@ -39,10 +39,18 @@ export const useTasks = () => {
         task
       );
       setTasks([...tasks, { ...task, id: response.data.id }]);
-    } catch (err) {
+    } catch {
       setError("Failed to add task");
     }
-  };
+  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  git add /media/umar/5726944d-7912-4e7d-9253-8f707ed90d4e/Learing-2024/react-projects/task-dashboard/src/hooks/useTasks.ts
+  git commit -m "some error fixes"
+  git push  };
 
   const updateTask = async (id: number, updatedTask: Partial<Task>) => {
     try {
@@ -56,7 +64,7 @@ export const useTasks = () => {
           task.id === id ? { ...task, ...updatedTask } : task
         )
       );
-    } catch (err) {
+    } catch {
       setError("Failed to update task");
     }
   };
@@ -67,7 +75,7 @@ export const useTasks = () => {
 
       await axios.delete(`https://jsonplaceholder.typicode.com/todos/${id}`);
       setTasks(tasks.filter((task) => task.id !== id));
-    } catch (err) {
+    } catch {
       setError("Failed to delete task");
     }
   };
@@ -85,7 +93,7 @@ export const useTasks = () => {
         dueDate: new Date().toISOString().split("T")[0],
       };
       return task;
-    } catch (err) {
+    } catch {
       setError("Failed to fetch task");
       return null;
     }
