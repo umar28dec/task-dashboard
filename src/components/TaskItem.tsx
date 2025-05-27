@@ -1,3 +1,4 @@
+import React, { useMemo } from "react";
 import { type Task } from "../types";
 import { Button, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -9,6 +10,15 @@ interface TaskItemProps {
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onUpdate, onDelete }) => {
+  const statusOptions = useMemo(
+    () => [
+      { value: "todo", label: "Todo" },
+      { value: "in-progress", label: "In Progress" },
+      { value: "done", label: "Done" },
+    ],
+    []
+  );
+
   return (
     <Card className="h-100">
       <Card.Body>
@@ -22,13 +32,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onUpdate, onDelete }) => {
           }
           className="mb-2"
         >
-          <option value="todo">Todo</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
+          {statusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </Form.Select>
         <Button
           variant="primary"
-          as={Link}
+          as={Link as any}
           to={`/tasks/update/${task.id}`}
           className="me-2"
         >
@@ -42,4 +54,4 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onUpdate, onDelete }) => {
   );
 };
 
-export default TaskItem;
+export default React.memo(TaskItem);
