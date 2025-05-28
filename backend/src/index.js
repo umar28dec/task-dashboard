@@ -3,6 +3,8 @@ const cors = require("cors");
 const sequelize = require("./db");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const authRoutes = require("./routes/auth");
+const authMiddleware = require("./middleware/auth");
 const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
@@ -31,11 +33,15 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Include all auth routes (register, login, user management)
+app.use("/", authRoutes);
+
+// Protect all /tasks routes
+app.use("/tasks", authMiddleware, taskRoutes);
+
 app.get("/", (req, res) => {
   res.json({ message: "Task Dashboard API is running." });
 });
-
-app.use("/tasks", taskRoutes);
 
 sequelize.sync().then(() => {
   app.listen(port, () => {
