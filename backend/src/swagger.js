@@ -29,16 +29,51 @@
  * @swagger
  * /tasks:
  *   get:
- *     summary: Get all tasks
+ *     summary: Get all tasks (with pagination and filtering)
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of tasks per page
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [todo, in-progress, done]
+ *         description: Filter by task status
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         description: Filter by task title (partial match)
  *     responses:
  *       200:
- *         description: List of tasks
+ *         description: Paginated and filtered list of tasks
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Task'
+ *               type: object
+ *               properties:
+ *                 tasks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Task'
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 pageSize:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
  *   post:
  *     summary: Create a new task
  *     requestBody:
