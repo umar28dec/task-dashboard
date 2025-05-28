@@ -10,6 +10,7 @@ import {
   Button,
 } from "react-bootstrap";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 interface TaskListProps {
   onUpdate: (id: number, updatedTask: Partial<Task>) => void;
@@ -29,6 +30,17 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
+
+  const getAuthHeaders = () =>
+    token ? { Authorization: `Bearer ${token}` } : {};
+
+  useEffect(() => {
+    if (token) {
+      fetchTasks();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, status, title, sortBy, sortOrder, token]);
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -41,7 +53,10 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
       };
       if (status) params.status = status;
       if (title) params.title = title;
-      const response = await axios.get(`${API_BASE_URL}/tasks`, { params });
+      const response = await axios.get(`${API_BASE_URL}/tasks`, {
+        params,
+        headers: { ...getAuthHeaders() },
+      });
       setTasks(response.data.tasks);
       setTotalPages(response.data.totalPages);
     } finally {
@@ -49,26 +64,10 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
     }
   };
 
-  useEffect(() => {
-    fetchTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, status, title, sortBy, sortOrder]);
-
-  // Add this effect to refetch tasks when a task is deleted or updated
-  useEffect(() => {
-    fetchTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, status, title, sortBy, sortOrder]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    fetchTasks();
   };
-
-  // If you call fetchTasks after deleting a task, but the current page is now empty (e.g., you deleted the last item on the last page),
-  // the page will not update to the previous page, so the UI may appear empty.
-  // To fix this, after deleting a task, check if the current page is now empty and, if so, go to the previous page.
 
   const handleDelete = async (id: number) => {
     await onDelete(id);
@@ -81,10 +80,12 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
     };
     if (status) params.status = status;
     if (title) params.title = title;
-    const response = await axios.get(`${API_BASE_URL}/tasks`, { params });
+    const response = await axios.get(`${API_BASE_URL}/tasks`, {
+      params,
+      headers: { ...getAuthHeaders() },
+    });
     setTasks(response.data.tasks);
     setTotalPages(response.data.totalPages);
-    // If the current page is now empty and not the first page, go to the previous page
     if (response.data.tasks.length === 0 && page > 1) {
       setPage(page - 1);
     }
@@ -178,9 +179,5 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
     </>
   );
 };
-
-// Make sure there is NO reference to filteredTasks or filteredTasks.slice in this file.
-// All pagination, filtering, and sorting are now handled by the backend.
-// Use only the 'tasks' array from the server response for rendering.
 
 export default React.memo(TaskList);

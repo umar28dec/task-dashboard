@@ -1,21 +1,44 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
+import axios from "axios";
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: () => void;
+  token: string | null;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("authToken")
+  );
+  const isAuthenticated = !!token;
 
-  const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
+  const login = async (username: string, password: string) => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:4000"}/login`,
+        { username, password }
+      );
+      setToken(res.data.token);
+      localStorage.setItem("authToken", res.data.token);
+      return true;
+    } catch {
+      setToken(null);
+      localStorage.removeItem("authToken");
+      return false;
+    }
+  };
+
+  const logout = () => {
+    setToken(null);
+    localStorage.removeItem("authToken");
+  };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

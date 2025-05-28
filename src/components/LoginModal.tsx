@@ -17,19 +17,26 @@ const LoginModal: React.FC<LoginModalProps> = ({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAuthenticated) {
       logout();
       onClose();
     } else {
       if (username && password) {
-        login();
-        setUsername("");
-        setPassword("");
-        setError(null);
-        onClose();
+        setLoading(true);
+        const ok = await login(username, password);
+        setLoading(false);
+        if (ok) {
+          setUsername("");
+          setPassword("");
+          setError(null);
+          onClose();
+        } else {
+          setError("Invalid username or password");
+        }
       } else {
         setError("Please enter username and password");
       }
@@ -53,7 +60,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter username"
-                required
+                autoComplete="username"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -63,12 +70,12 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                required
+                autoComplete="current-password"
               />
             </Form.Group>
             {error && <Alert variant="danger">{error}</Alert>}
-            <Button variant="primary" type="submit">
-              Login
+            <Button variant="primary" type="submit" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </Form>
         )}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import type { Task } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
@@ -30,13 +31,20 @@ export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
+
+  // Helper to get auth headers
+  const getAuthHeaders = () =>
+    token ? { Authorization: `Bearer ${token}` } : {};
 
   // Helper to reload tasks from server
   const reloadTasks = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/tasks`);
-      setTasks(response.data.tasks || response.data); // handle both paginated and non-paginated
+      const response = await axios.get(`${API_BASE_URL}/tasks`, {
+        headers: { ...getAuthHeaders() },
+      });
+      setTasks(response.data.tasks || response.data);
       setError(null);
     } catch {
       setError("Failed to fetch tasks");
@@ -46,8 +54,9 @@ export const useTasks = () => {
   };
 
   useEffect(() => {
-    reloadTasks();
-  }, []);
+    if (token) reloadTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const addTask = async (task: Omit<Task, "id">) => {
     const validationError = validateTask(task);
@@ -56,7 +65,9 @@ export const useTasks = () => {
       return;
     }
     try {
-      await axios.post(`${API_BASE_URL}/tasks`, task);
+      await axios.post(`${API_BASE_URL}/tasks`, task, {
+        headers: { ...getAuthHeaders() },
+      });
       await reloadTasks();
       setError(null);
     } catch {
@@ -71,7 +82,9 @@ export const useTasks = () => {
       return;
     }
     try {
-      await axios.put(`${API_BASE_URL}/tasks/${id}`, updatedTask);
+      await axios.put(`${API_BASE_URL}/tasks/${id}`, updatedTask, {
+        headers: { ...getAuthHeaders() },
+      });
       await reloadTasks();
       setError(null);
     } catch {
@@ -81,7 +94,9 @@ export const useTasks = () => {
 
   const deleteTask = async (id: number) => {
     try {
-      await axios.delete(`${API_BASE_URL}/tasks/${id}`);
+      await axios.delete(`${API_BASE_URL}/tasks/${id}`, {
+        headers: { ...getAuthHeaders() },
+      });
       await reloadTasks();
       setError(null);
     } catch {
@@ -91,7 +106,9 @@ export const useTasks = () => {
 
   const fetchTaskById = async (id: number): Promise<Task | null> => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/tasks/${id}`);
+      const response = await axios.get(`${API_BASE_URL}/tasks/${id}`, {
+        headers: { ...getAuthHeaders() },
+      });
       return response.data;
     } catch {
       setError("Failed to fetch task");
