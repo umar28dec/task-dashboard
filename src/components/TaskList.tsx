@@ -54,10 +54,40 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, status, title, sortBy, sortOrder]);
 
+  // Add this effect to refetch tasks when a task is deleted or updated
+  useEffect(() => {
+    fetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, status, title, sortBy, sortOrder]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
     fetchTasks();
+  };
+
+  // If you call fetchTasks after deleting a task, but the current page is now empty (e.g., you deleted the last item on the last page),
+  // the page will not update to the previous page, so the UI may appear empty.
+  // To fix this, after deleting a task, check if the current page is now empty and, if so, go to the previous page.
+
+  const handleDelete = async (id: number) => {
+    await onDelete(id);
+    // Refetch tasks after deletion
+    const params: any = {
+      page,
+      pageSize,
+      sortBy,
+      sortOrder,
+    };
+    if (status) params.status = status;
+    if (title) params.title = title;
+    const response = await axios.get(`${API_BASE_URL}/tasks`, { params });
+    setTasks(response.data.tasks);
+    setTotalPages(response.data.totalPages);
+    // If the current page is now empty and not the first page, go to the previous page
+    if (response.data.tasks.length === 0 && page > 1) {
+      setPage(page - 1);
+    }
   };
 
   return (
@@ -110,7 +140,11 @@ const TaskList: React.FC<TaskListProps> = ({ onUpdate, onDelete }) => {
         ) : (
           tasks.map((task) => (
             <Col key={task.id} xs={12} sm={6} md={4} className="mb-4">
-              <TaskItem task={task} onUpdate={onUpdate} onDelete={onDelete} />
+              <TaskItem
+                task={task}
+                onUpdate={onUpdate}
+                onDelete={handleDelete}
+              />
             </Col>
           ))
         )}
