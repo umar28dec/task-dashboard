@@ -10,24 +10,29 @@ export const useTasks = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper to reload tasks from server
+  const reloadTasks = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/tasks`);
+      setTasks(response.data.tasks || response.data); // handle both paginated and non-paginated
+      setError(null);
+    } catch {
+      setError("Failed to fetch tasks");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/tasks`);
-        setTasks(response.data);
-      } catch {
-        setError("Failed to fetch tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTasks();
+    reloadTasks();
   }, []);
 
   const addTask = async (task: Omit<Task, "id">) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/tasks`, task);
-      setTasks([...tasks, response.data]);
+      await axios.post(`${API_BASE_URL}/tasks`, task);
+      await reloadTasks();
+      setError(null);
     } catch {
       setError("Failed to add task");
     }
@@ -36,11 +41,8 @@ export const useTasks = () => {
   const updateTask = async (id: number, updatedTask: Partial<Task>) => {
     try {
       await axios.put(`${API_BASE_URL}/tasks/${id}`, updatedTask);
-      setTasks(
-        tasks.map((task) =>
-          task.id === id ? { ...task, ...updatedTask } : task
-        )
-      );
+      await reloadTasks();
+      setError(null);
     } catch {
       setError("Failed to update task");
     }
@@ -49,7 +51,8 @@ export const useTasks = () => {
   const deleteTask = async (id: number) => {
     try {
       await axios.delete(`${API_BASE_URL}/tasks/${id}`);
-      setTasks(tasks.filter((task) => task.id !== id));
+      await reloadTasks();
+      setError(null);
     } catch {
       setError("Failed to delete task");
     }
@@ -73,5 +76,6 @@ export const useTasks = () => {
     updateTask,
     deleteTask,
     fetchTaskById,
+    reloadTasks,
   };
 };
