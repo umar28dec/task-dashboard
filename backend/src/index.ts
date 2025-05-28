@@ -2,12 +2,35 @@ import express from "express";
 import cors from "cors";
 import sequelize from "./db";
 import { Task } from "./models/Task";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
 
 const app = express();
 const port = 4000;
 
 app.use(cors());
 app.use(express.json());
+
+// Swagger setup
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Task Dashboard API",
+      version: "1.0.0",
+      description: "API documentation for the Task Dashboard backend",
+    },
+    servers: [
+      {
+        url: "http://localhost:4000",
+      },
+    ],
+  },
+  apis: ["./src/swagger.ts"], // Reference only the new swagger file
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Root index action
 app.get("/", (req, res) => {

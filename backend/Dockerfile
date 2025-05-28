@@ -2,13 +2,16 @@ FROM node:latest
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm install
+# Install and upgrade yarn
+RUN npm install -g yarn && yarn set version stable
+
+COPY package.json yarn.lock* ./
+RUN yarn install
 
 COPY . .
 
-RUN npm run build
+RUN yarn build
 
 EXPOSE 4000
 
-CMD ["npm", "start"]
+CMD ["yarn", "start"]
