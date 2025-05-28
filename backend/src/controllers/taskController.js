@@ -1,9 +1,36 @@
 const Task = require("../models/Task");
+const { Op } = require("sequelize");
 
 exports.getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.findAll();
-    res.json(tasks);
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const offset = (page - 1) * pageSize;
+
+    // Filtering
+    const where = {};
+    if (req.query.status) {
+      where.status = req.query.status;
+    }
+    if (req.query.title) {
+      where.title = { [Op.like]: `%${req.query.title}%` };
+    }
+
+    const { count, rows } = await Task.findAndCountAll({
+      where,
+      offset,
+      limit: pageSize,
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json({
+      tasks: rows,
+      total: count,
+      page,
+      pageSize,
+      totalPages: Math.ceil(count / pageSize),
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
