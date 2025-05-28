@@ -17,11 +17,27 @@ exports.getAllTasks = async (req, res) => {
       where.title = { [Op.like]: `%${req.query.title}%` };
     }
 
+    // Sorting
+    let sortBy = req.query.sortBy || "createdAt";
+    let sortOrder = req.query.sortOrder === "asc" ? "ASC" : "DESC";
+    // Only allow sorting by certain fields for safety
+    const allowedSortFields = [
+      "id",
+      "title",
+      "status",
+      "dueDate",
+      "createdAt",
+      "updatedAt",
+    ];
+    if (!allowedSortFields.includes(sortBy)) {
+      sortBy = "createdAt";
+    }
+
     const { count, rows } = await Task.findAndCountAll({
       where,
       offset,
       limit: pageSize,
-      order: [["createdAt", "DESC"]],
+      order: [[sortBy, sortOrder]],
     });
 
     res.json({

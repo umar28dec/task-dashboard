@@ -29,7 +29,7 @@
  * @swagger
  * /tasks:
  *   get:
- *     summary: Get all tasks (with pagination and filtering)
+ *     summary: Get all tasks (with pagination, filtering, and sorting)
  *     parameters:
  *       - in: query
  *         name: page
@@ -54,9 +54,23 @@
  *         schema:
  *           type: string
  *         description: Filter by task title (partial match)
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [id, title, status, dueDate, createdAt, updatedAt]
+ *           default: createdAt
+ *         description: Field to sort by
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Sort order (asc or desc)
  *     responses:
  *       200:
- *         description: Paginated and filtered list of tasks
+ *         description: Paginated, filtered, and sorted list of tasks
  *         content:
  *           application/json:
  *             schema:
