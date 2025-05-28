@@ -4,19 +4,28 @@
  *   schemas:
  *     Task:
  *       type: object
+ *       required:
+ *         - title
  *       properties:
  *         id:
  *           type: integer
  *         title:
  *           type: string
+ *           description: Task title (required, non-empty string)
  *         description:
  *           type: string
  *         status:
  *           type: string
- *           enum: [todo, in-progress, done]
+ *           enum:
+ *             - todo
+ *             - in-progress
+ *             - done
+ *           description: |
+ *             Task status (must be one of: todo, in-progress, done)
  *         dueDate:
  *           type: string
  *           format: date
+ *           description: Due date (must be a valid date)
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -103,6 +112,17 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
  *
  * /tasks/{id}:
  *   get:
@@ -143,6 +163,17 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Task'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
  *       404:
  *         description: Task not found
  *   delete:

@@ -5,6 +5,27 @@ import type { Task } from "../types";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
+function validateTask(task: Partial<Task>): string | null {
+  // Only validate fields that are present (for partial updates)
+  if (
+    "title" in task &&
+    (typeof task.title !== "string" || task.title.trim().length === 0)
+  ) {
+    return "Title is required and must be a non-empty string.";
+  }
+  if (
+    "status" in task &&
+    task.status &&
+    !["todo", "in-progress", "done"].includes(task.status)
+  ) {
+    return "Status must be one of: todo, in-progress, done.";
+  }
+  if ("dueDate" in task && task.dueDate && isNaN(Date.parse(task.dueDate))) {
+    return "Due date must be a valid date.";
+  }
+  return null;
+}
+
 export const useTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,6 +50,11 @@ export const useTasks = () => {
   }, []);
 
   const addTask = async (task: Omit<Task, "id">) => {
+    const validationError = validateTask(task);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     try {
       await axios.post(`${API_BASE_URL}/tasks`, task);
       await reloadTasks();
@@ -39,6 +65,11 @@ export const useTasks = () => {
   };
 
   const updateTask = async (id: number, updatedTask: Partial<Task>) => {
+    const validationError = validateTask(updatedTask);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     try {
       await axios.put(`${API_BASE_URL}/tasks/${id}`, updatedTask);
       await reloadTasks();

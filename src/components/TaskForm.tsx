@@ -61,7 +61,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
           value={formData.title || ""}
           onChange={handleChange}
           placeholder="Enter task title"
-          required
         />
       </Form.Group>
       <Form.Group className="mb-3">
@@ -93,7 +92,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
           name="dueDate"
           value={formData.dueDate || ""}
           onChange={handleChange}
-          required
         />
       </Form.Group>
       {error && <Alert variant="danger">{error}</Alert>}
