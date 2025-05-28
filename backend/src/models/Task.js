@@ -1,13 +1,7 @@
-import { DataTypes, Model } from "sequelize";
-import sequelize from "../db";
+const { DataTypes, Model } = require("sequelize");
+const sequelize = require("../db");
 
-export class Task extends Model {
-  public id!: number;
-  public title!: string;
-  public description!: string;
-  public status!: "todo" | "in-progress" | "done";
-  public dueDate!: string;
-}
+class Task extends Model {}
 
 Task.init(
   {
@@ -40,3 +34,5 @@ Task.init(
     timestamps: true,
   }
 );
+
+module.exports = Task;
