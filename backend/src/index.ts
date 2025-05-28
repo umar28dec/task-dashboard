@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import sequelize from "./db";
+import { Task } from "./models/Task";
 
 const app = express();
 const port = 4000;
@@ -7,61 +9,69 @@ const port = 4000;
 app.use(cors());
 app.use(express.json());
 
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: "todo" | "in-progress" | "done";
-  dueDate: string;
-};
-
-const tasks: Task[] = [];
-let nextId = 1;
+// Root index action
+app.get("/", (req, res) => {
+  res.json({ message: "Task Dashboard API is running." });
+});
 
 // Get all tasks
-app.get("/tasks", (req, res) => {
-  res.json(tasks);
+app.get("/tasks", async (req, res) => {
+  try {
+    const tasks = await Task.findAll();
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch tasks" });
+  }
 });
 
 // Get a single task
-app.get("/tasks/:id", (req, res) => {
-  const task = tasks.find((t) => t.id === Number(req.params.id));
-  if (!task) return res.status(404).json({ error: "Task not found" });
-  res.json(task);
+app.get("/tasks/:id", async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch task" });
+  }
 });
 
 // Create a new task
-app.post("/tasks", (req, res) => {
-  const { title, description, status, dueDate } = req.body;
-  const newTask: Task = {
-    id: nextId++,
-    title,
-    description,
-    status,
-    dueDate,
-  };
-  tasks.push(newTask);
-  res.status(201).json(newTask);
+app.post("/tasks", async (req, res) => {
+  try {
+    const newTask = await Task.create(req.body);
+    res.status(201).json(newTask);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to add task" });
+  }
 });
 
 // Update a task
-app.put("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const idx = tasks.findIndex((t) => t.id === id);
-  if (idx === -1) return res.status(404).json({ error: "Task not found" });
-  tasks[idx] = { ...tasks[idx], ...req.body };
-  res.json(tasks[idx]);
+app.put("/tasks/:id", async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    await task.update(req.body);
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update task" });
+  }
 });
 
 // Delete a task
-app.delete("/tasks/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const idx = tasks.findIndex((t) => t.id === id);
-  if (idx === -1) return res.status(404).json({ error: "Task not found" });
-  tasks.splice(idx, 1);
-  res.status(204).send();
+app.delete("/tasks/:id", async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+    await task.destroy();
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete task" });
+  }
 });
 
-app.listen(port, () => {
-  console.log(`Task API listening at http://localhost:${port}`);
+// Sync DB and start server
+sequelize.sync().then(() => {
+  app.listen(port, () => {
+    console.log(`Task API listening at http://localhost:${port}`);
+  });
 });
